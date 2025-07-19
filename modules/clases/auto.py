@@ -1,14 +1,15 @@
 # Importa la clase base Vehiculo, de la cual Auto va a heredar
 from modules.clases.vehiculo import Vehiculo
 
-# Define la clase Auto, que hereda de Vehiculo
+# Clase Auto que hereda de la clase abstracta Vehiculo (Herencia).
+# Permite reutilizar atributos y métodos comunes como marca, modelo, año, precio y vin.
 class Auto(Vehiculo):
     # Constructor que recibe atributos del auto y llama al constructor de la clase base
     def __init__(self, marca, modelo, año, precio, vin, puertas, combustible, automatico):
-        super().__init__(marca, modelo, año, precio, vin)  # Llama al constructor de Vehiculo
-        self.__puertas = puertas              # Número de puertas del auto
-        self.__combustible = combustible      # Tipo de combustible (Gasolina, Diésel, etc.)
-        self.__automatico = automatico        # Booleano: True si es automático, False si es manual
+        super().__init__(marca, modelo, año, precio, vin)
+        self._puertas = puertas
+        self._combustible = combustible
+        self._automatico = automatico      # Booleano: True si es automático, False si es manual
 
     # Calcula el valor del seguro como el 5% del precio
     def calcular_seguro(self):
@@ -22,8 +23,10 @@ class Auto(Vehiculo):
     def obtener_tipo(self):
         return "Auto"
 
-    # Muestra toda la información relevante del auto, incluyendo lo heredado y los nuevos atributos
+# Implementación del método abstracto mostrar_informacion() definido en Vehiculo.
+# Ejemplo de Polimorfismo: cada subclase define su propia versión de este método.
     def mostrar_informacion(self):
-        base = super().mostrar_informacion()  # Llama al método de la clase base
-        return (f"{base} | Puertas: {self.__puertas} | "
-                f"Combustible: {self.__combustible} | Automático: {'Sí' if self.__automatico else 'No'}")
+        estado = "Disponible" if self.esta_disponible() else "Vendido"
+        return (f"{self.marca} {self.modelo} {self.año} - ${self.precio:.2f} - "
+                f"VIN: {self.vin} - {estado} - {self._puertas} puertas - "
+                f"{self._combustible} - {'Automático' if self._automatico else 'Manual'}")

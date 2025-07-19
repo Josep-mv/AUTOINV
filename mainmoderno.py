@@ -6,9 +6,12 @@ from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
                              QTableWidgetItem, QMessageBox, QFrame, QScrollArea)
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QFont, QPalette, QColor, QIcon
-from modules.clases.auto import Auto
+#from modules.clases.auto import Auto
 from modules.clases.cliente import Cliente
 from modules.clases.concesionario import Concesionario
+from modules.factory.vehiculo_factory import VehiculoFactory
+from modules.database.db_manager import DBManager
+
 
 
 class ModernCard(QFrame):
@@ -196,7 +199,7 @@ class VehiculoTab(QWidget):
 
     def registrar_vehiculo(self):
         try:
-            auto = Auto(
+            auto = VehiculoFactory.crear_auto(
                 marca=self.marca_edit.text(),
                 modelo=self.modelo_edit.text(),
                 año=self.año_spin.value(),
@@ -206,6 +209,8 @@ class VehiculoTab(QWidget):
                 combustible=self.combustible_combo.currentText(),
                 automatico=self.automatico_check.isChecked()
             )
+            # Patrón de Diseño: Factory
+            # Usamos VehiculoFactory para crear instancias de Auto sin depender de su constructor directamente.
 
             if not all([auto.marca, auto.modelo, auto.vin]):
                 QMessageBox.warning(self, "Error", "Por favor complete todos los campos obligatorios.")
@@ -445,7 +450,7 @@ class AutolandMainWindow(QMainWindow):
         self.setup_style()
 
     def setup_ui(self):
-        self.setWindowTitle("AUTOLAND - Sistema de Concesionario")
+        self.setWindowTitle("AUTOINV - Sistema de Concesionario")
         self.setMinimumSize(1000, 700)
 
         # Widget central
@@ -457,7 +462,7 @@ class AutolandMainWindow(QMainWindow):
         layout.setContentsMargins(20, 20, 20, 20)
 
         # Header
-        header = QLabel("🚗 AUTOLAND")
+        header = QLabel("🚗 AUTOINV")
         header.setFont(QFont("Segoe UI", 24, QFont.Weight.Bold))
         header.setStyleSheet("color: #2c3e50; margin-bottom: 20px;")
         header.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -525,13 +530,25 @@ class AutolandMainWindow(QMainWindow):
             QMessageBox.warning(self, "Error", "Cliente ya registrado.")
             return
 
+        # Registrar en el objeto concesionario
         self.concesionario.registrar_cliente(cliente)
+
+        # Agregar al diccionario local
         self.clientes[cliente.dni] = cliente
+
+        # Registrar en la base de datos
+        DBManager.registrar_cliente(cliente)
+
+        # Actualizar reportes
         self.reportes_tab.actualizar_reportes()
 
 
 def main():
+
     app = QApplication(sys.argv)
+
+    # ← Conexión a base de datos
+    DBManager.conectar()
 
     # Configurar estilo de la aplicación
     app.setStyle('Fusion')
